@@ -37,8 +37,8 @@ private:
 
 	int m_movesMade;
 
-	const int getBestMove(char copyboard[m_boardSize][m_boardSize], const int turns);
-	const bool getWinner(const char board[m_boardSize][m_boardSize], const char player) const;
+	const int getBestMove(const char copyboard[m_boardSize][m_boardSize], const int turns);
+	const char getWinner(const char board[m_boardSize][m_boardSize]) const;
 
 	// Debugging variables
 	int m_i;
