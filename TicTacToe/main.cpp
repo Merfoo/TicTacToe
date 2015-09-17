@@ -10,7 +10,7 @@ int main()
 	game.enableAi(true, false);
 	int turns = 0;
 
-	while (turns < 9)
+	while (turns < TicTacToe::MAX_MOVES)
 	{
 		if (!game.isAiTurn())
 		{
@@ -26,15 +26,7 @@ int main()
 		else
 			game.insertAiMove();
 
-		std::cout << std::endl;
-
-		for (int i = 0; i < 3; i++)
-		{
-			for (int j = 0; j < 3; j++)
-				std::cout << game.getSpot(i, j) << "|\t";
-
-			std::cout << std::endl;
-		}
+		game.draw();
 
 		char winner = game.getWinner();
 

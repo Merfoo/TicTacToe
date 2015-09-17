@@ -3,6 +3,8 @@
 class TicTacToe
 {
 public:
+	static const int MAX_MOVES = 9;
+
 	TicTacToe(const char playerOne, const char playerTwo, const char emptySpot);
 	~TicTacToe();
 	
@@ -20,6 +22,8 @@ public:
 	const char getEmptySpot() const;
 	const char getWinner() const;
 	const char getSpot(const int x, const int y) const;
+
+	void draw() const;
 private:
 	char m_playerOne;
 	char m_playerTwo;
@@ -30,13 +34,13 @@ private:
 
 	bool m_aiEnabled;
 	bool m_aiPlayerOne;
-	bool m_playerOneTurn;
 
-	static const int m_maxMoves = 9;
 	int m_movesMade;
 
 	const int getBestMove(char copyboard[m_boardSize][m_boardSize], const int turns);
-	const char getWinner(const char board[m_boardSize][m_boardSize]) const;
+	const bool getWinner(const char board[m_boardSize][m_boardSize], const char player) const;
+
+	// Debugging variables
 	int m_i;
 	int m_j;
 	int m_k;
