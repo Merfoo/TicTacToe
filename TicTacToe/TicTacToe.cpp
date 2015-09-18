@@ -25,10 +25,15 @@ void TicTacToe::resetBoard()
 			m_board[i][j] = m_emptySpot;
 }
 
-void TicTacToe::enableAi(const bool enableAI, const bool asPlayerOne)
+void TicTacToe::enableAi(const bool asPlayerOne)
 {
-	m_aiEnabled = enableAI;
+	m_aiEnabled = true;
 	m_aiPlayerOne = asPlayerOne;
+}
+
+void TicTacToe::disableAi()
+{
+	m_aiEnabled = false;
 }
 
 const bool TicTacToe::aiEnabled() const
@@ -41,7 +46,7 @@ void TicTacToe::insertAiMove()
 	int x;
 	int y;
 
-	if (m_movesMade != 0)
+	if (m_movesMade > 0)
 	{
 		int bestTurnVal = 0;
 		bool firstVal = true;
@@ -62,11 +67,11 @@ void TicTacToe::insertAiMove()
 				int currTurnVal = getBestMove(m_board, nextTurn);
 				m_board[i][j] = m_emptySpot;
 
-				std::cout << currTurnVal << " : " << nextTurn << " turnVal : " << m_k << " || " << m_i << " :: " << m_j << std::endl;
+				//std::cout << currTurnVal << " : " << nextTurn << " turnVal : " << m_k << " || " << m_i << " :: " << m_j << std::endl;
 
 				if (currTurnVal == nextTurn + 1)
 				{
-					std::cout << "WON MANNNN\n";
+					//std::cout << "WON MANNNN\n";
 					x = i;
 					y = j;
 					i = m_boardSize;
@@ -153,14 +158,49 @@ const char TicTacToe::getSpot(const int x, const int y) const
 	return m_board[x][y];
 }
 
+const char TicTacToe::getPlayerOne() const
+{
+	return m_playerOne;
+}
+
+const char TicTacToe::getPlayerTwo() const
+{
+	return m_playerTwo;
+}
+
+const int TicTacToe::getMovesMade() const
+{
+	return m_movesMade;
+}
+
 void TicTacToe::draw() const
 {
+	/*
+		X | O | O
+	   -----------
+	    X | O | X
+	   -----------
+	    O | X | X
+	*/
 	std::cout << std::endl;
 
 	for (int i = 0; i < 3; i++)
 	{
+		std::cout << "\t\n  ";
+
 		for (int j = 0; j < 3; j++)
-			std::cout << "\t" << m_board[i][j] << "|\t";
+		{
+			std::cout << m_board[i][j];
+
+			if (j < 2)
+				std::cout << " | ";
+		}
+
+		std::cout << "\n ";
+		
+		if(i < 2)
+			for (int j = 0; j < 11; j++)
+				std::cout << "_";
 
 		std::cout << std::endl;
 	}
@@ -170,7 +210,6 @@ void TicTacToe::draw() const
 
 const int TicTacToe::getBestMove(const char copyboard[m_boardSize][m_boardSize], const int turns)
 {
-	int turnVals = 0;
 	const char winner = getWinner(copyboard);
 
 	if (winner != m_emptySpot || turns <= 0)
@@ -182,7 +221,7 @@ const int TicTacToe::getBestMove(const char copyboard[m_boardSize][m_boardSize],
 			m_i++;
 			//return 1 * turns;
 			return 1 * (turns + 1);
-			turnVals = 1 * (turns + 1);
+			//turnVals = 1 * (turns + 1);
 		}
 		
 		if ((winner == m_playerOne && !m_aiPlayerOne) || (winner == m_playerTwo &&  m_aiPlayerOne))
@@ -190,10 +229,10 @@ const int TicTacToe::getBestMove(const char copyboard[m_boardSize][m_boardSize],
 			m_j++;
 			//return -1 * turns;
 			return -1 * (turns + 1);
-			turnVals = -1 * (turns + 1);
+			//turnVals = -1 * (turns + 1);
 		}
 
-		return turnVals;
+		return 0;
 	}
 
 	char board[m_boardSize][m_boardSize];
@@ -201,6 +240,8 @@ const int TicTacToe::getBestMove(const char copyboard[m_boardSize][m_boardSize],
 	for (int i = 0; i < m_boardSize; i++)
 		for (int j = 0; j < m_boardSize; j++)
 			board[i][j] = copyboard[i][j];
+
+	int turnVals = 0;
 
 	for (int i = 0; i < m_boardSize; i++)
 	{

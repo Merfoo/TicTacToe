@@ -10,7 +10,8 @@ public:
 	
 	void resetBoard();
 	
-	void enableAi(const bool enableAI, const bool asPlayerOne);
+	void enableAi(const bool asPlayerOne);
+	void disableAi();
 	const bool aiEnabled() const;
 
 	void insertAiMove();
@@ -22,6 +23,10 @@ public:
 	const char getEmptySpot() const;
 	const char getWinner() const;
 	const char getSpot(const int x, const int y) const;
+	const char getPlayerOne() const;
+	const char getPlayerTwo() const;
+
+	const int getMovesMade() const;
 
 	void draw() const;
 private:
