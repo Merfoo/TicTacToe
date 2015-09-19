@@ -25,10 +25,10 @@ void TicTacToe::resetBoard()
 			m_board[i][j] = m_emptySpot;
 }
 
-void TicTacToe::enableAi(const bool asPlayerOne)
+void TicTacToe::enableAi(const bool aiPlayerOne)
 {
 	m_aiEnabled = true;
-	m_aiPlayerOne = asPlayerOne;
+	m_aiPlayerOne = aiPlayerOne;
 }
 
 void TicTacToe::disableAi()
@@ -48,7 +48,7 @@ void TicTacToe::insertAiMove()
 
 	if (m_movesMade > 0)
 	{
-		int bestTurnVal = 0;
+		float bestTurnVal = 0;
 		bool firstVal = true;
 
 		for (int i = 0; i < m_boardSize; i++)
@@ -63,22 +63,13 @@ void TicTacToe::insertAiMove()
 				m_k = 0;
 
 				m_board[i][j] = m_aiPlayerOne ? m_playerOne : m_playerTwo;
-				int nextTurn = MAX_MOVES - m_movesMade - 1;
-				int currTurnVal = getBestMove(m_board, nextTurn);
+				const int nextTurn = maxMoves - m_movesMade - 1;
+				const float currTurnVal = getBestMove(m_board, nextTurn);
 				m_board[i][j] = m_emptySpot;
 
 				//std::cout << currTurnVal << " : " << nextTurn << " turnVal : " << m_k << " || " << m_i << " :: " << m_j << std::endl;
 
-				if (currTurnVal == nextTurn + 1)
-				{
-					//std::cout << "WON MANNNN\n";
-					x = i;
-					y = j;
-					i = m_boardSize;
-					j = m_boardSize;
-				}
-
-				else if (firstVal || currTurnVal > bestTurnVal)
+				if (firstVal || currTurnVal > bestTurnVal)
 				{
 					firstVal = false;
 					bestTurnVal = currTurnVal;
@@ -182,6 +173,7 @@ void TicTacToe::draw() const
 	   -----------
 	    O | X | X
 	*/
+
 	std::cout << std::endl;
 
 	for (int i = 0; i < 3; i++)
@@ -208,7 +200,7 @@ void TicTacToe::draw() const
 	std::cout << std::endl;
 }
 
-const int TicTacToe::getBestMove(const char copyboard[m_boardSize][m_boardSize], const int turns)
+const float TicTacToe::getBestMove(const char copyboard[m_boardSize][m_boardSize], const int turns)
 {
 	const char winner = getWinner(copyboard);
 
@@ -216,20 +208,31 @@ const int TicTacToe::getBestMove(const char copyboard[m_boardSize][m_boardSize],
 	{
 		m_k++;
 		
+		// AI wins
 		if ((winner == m_playerOne && m_aiPlayerOne) || (winner == m_playerTwo &&  !m_aiPlayerOne))
 		{
 			m_i++;
-			//return 1 * turns;
-			return 1 * (turns + 1);
-			//turnVals = 1 * (turns + 1);
+
+			if (maxMoves - (turns + 1) == m_movesMade)
+			{
+				//std::cout << "MMAANNNNN" << std::endl;
+				// so bad, i cri evryteim :3
+				return turns + 1000000;
+			}
+
+			return 0.5 * (turns + 1);
 		}
 		
+		// Non-AI wins
 		if ((winner == m_playerOne && !m_aiPlayerOne) || (winner == m_playerTwo &&  m_aiPlayerOne))
 		{
 			m_j++;
-			//return -1 * turns;
+
+			// If previous turn was Non-AI and they win, put more value in this spot to prevent them winning
+			if (((turns + 1) % 2 != 0) == m_aiPlayerOne)
+				return 0.5 * (turns + 1);
+			
 			return -1 * (turns + 1);
-			//turnVals = -1 * (turns + 1);
 		}
 
 		return 0;
@@ -241,7 +244,7 @@ const int TicTacToe::getBestMove(const char copyboard[m_boardSize][m_boardSize],
 		for (int j = 0; j < m_boardSize; j++)
 			board[i][j] = copyboard[i][j];
 
-	int turnVals = 0;
+	float turnVals = 0;
 
 	for (int i = 0; i < m_boardSize; i++)
 	{
