@@ -1,12 +1,21 @@
 #include <iostream>
 #include <string>
+#include <chrono>
 
 #include "TicTacToe.h"
 #include "Address.h"
 #include "Socket.h"
 
 const int socketPort = 5000;
+const float waitForPlayerTimeout = 10;		// Seconds
+const float listenForPlayerTimeout = 20;	// Seconds
 
+const float convertToSeconds(std::chrono::duration<float> duration)
+{
+	return duration.count();
+}
+
+// TODO: Add returning IDs for input like "exit" or "reset" instead of just 0
 const int getPlayerCoords(const TicTacToe& game, int& x, int& y)
 {
 	bool invalidInput = false;
@@ -17,16 +26,16 @@ const int getPlayerCoords(const TicTacToe& game, int& x, int& y)
 
 		if (invalidInput)
 			std::cout << "Previous input invalid!\n";
-
+		
 		std::cout << "Your turn (" << (game.isPlayerOneTurn() ? game.getPlayerOne() : game.getPlayerTwo()) << ") \n";
 
 		invalidInput = true;
 		std::string input;
 		std::getline(std::cin, input);
 
-		if (input.length() >= 3)
+		if (input.length() >= 2)
 		{
-			x = (int(input[2]) - 48) - 1;
+			x = (int(input[1]) - 48) - 1;
 			y = (int(input[0]) - 48) - 1;
 
 			if (x >= 0 && x < 3 && y >= 0 && y < 3)
@@ -64,7 +73,6 @@ const bool checkGameStatus(const TicTacToe& game)
 	return false;
 }
 
-// TODO: Add timeouts during waiting for data from the other person if they want to continue waiting or just exit
 void playOnline(TicTacToe game, const Address dest, Socket socket, const bool asPlayerOne)
 {
 	while (!checkGameStatus(game))
@@ -82,6 +90,8 @@ void playOnline(TicTacToe game, const Address dest, Socket socket, const bool as
 
 		else
 		{
+			auto startTime = std::chrono::steady_clock::now();
+
 			while (true)
 			{
 				Address from;
@@ -92,6 +102,23 @@ void playOnline(TicTacToe game, const Address dest, Socket socket, const bool as
 					x = data[0];
 					y = data[1];
 					break;
+				}
+
+				if (convertToSeconds(std::chrono::steady_clock::now() - startTime) >= waitForPlayerTimeout)
+				{
+					std::cout << "Its been some time for the other player to pick a move, keep waiting? [y]" << std::endl;
+
+					std::string continuePlaying;
+					std::getline(std::cin, continuePlaying);
+
+					if (continuePlaying.length() > 0 && continuePlaying[0] == 'y')
+					{
+						startTime = std::chrono::steady_clock::now();
+						std::cout << "Continuing waiting..." << std::endl;
+					}
+
+					else
+						return;
 				}
 			}
 		}
@@ -177,6 +204,8 @@ int main()
 					socket.open(socketPort);
 					std::cout << "Listening on port: " << socketPort << std::endl;
 
+					auto startTime = std::chrono::steady_clock::now();
+
 					// TODO: Add timeout for waiting for data to continue or exit
 					while (true)
 					{
@@ -186,7 +215,7 @@ int main()
 						
 						if (socket.recieve(from, data, sizeof(data)) > 0 && data[0] == request)
 						{
-							std::cout << "Play with " << from.toString() << "? [y/n]" << std::endl;
+							std::cout << "Play with " << from.toString() << "? [y]" << std::endl;
 							
 							std::string response;
 							std::getline(std::cin, response);
@@ -196,6 +225,23 @@ int main()
 								playOnline(game, from, socket, true);
 								break;
 							}
+						}
+
+						if (convertToSeconds(std::chrono::steady_clock::now() - startTime) >= listenForPlayerTimeout)
+						{
+							std::cout << "Continue listening? [y]" << std::endl;
+
+							std::string continueListening;
+							std::getline(std::cin, continueListening);
+
+							if (continueListening.length() > 0 && continueListening[0] == 'y')
+							{
+								startTime = std::chrono::steady_clock::now();
+								std::cout << "Continuing listening..." << std::endl;
+							}
+
+							else
+								break;
 						}
 					}
 				}
@@ -208,7 +254,7 @@ int main()
 
 			else if (in == playVsAi)
 			{
-				std::cout << "Be player 1? [y/n]" << std::endl;
+				std::cout << "Be player 1? [y]" << std::endl;
 
 				std::string enableAi;
 				std::getline(std::cin, enableAi);
