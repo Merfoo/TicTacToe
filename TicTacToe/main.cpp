@@ -7,62 +7,92 @@
 
 const int socketPort = 5000;
 
+const int getPlayerCoords(const TicTacToe& game, int& x, int& y)
+{
+	bool invalidInput = false;
+
+	while (true)
+	{
+		game.draw();
+
+		if (invalidInput)
+			std::cout << "Previous input invalid!\n";
+
+		std::cout << "Your turn (" << (game.isPlayerOneTurn() ? game.getPlayerOne() : game.getPlayerTwo()) << ") \n";
+
+		invalidInput = true;
+		std::string input;
+		std::getline(std::cin, input);
+
+		if (input.length() >= 3)
+		{
+			x = (int(input[2]) - 48) - 1;
+			y = (int(input[0]) - 48) - 1;
+
+			if (x >= 0 && x < 3 && y >= 0 && y < 3)
+				if (game.getSpot(x, y) == game.getEmptySpot())
+					invalidInput = false;
+		}
+
+		if (!invalidInput)
+			break;
+	}
+
+	return 0;
+}
+
+const bool checkGameStatus(const TicTacToe& game)
+{
+	const char winner = game.getWinner();
+
+	if (winner != game.getEmptySpot())
+	{
+		game.draw();
+		std::cout << " WINNER! " << winner << std::endl;
+		
+		return true;
+	}
+
+	else if (game.getMovesMade() == TicTacToe::maxMoves)
+	{
+		game.draw();
+		std::cout << "\n CATS GAME! \n" << std::endl;
+
+		return true;
+	}
+
+	return false;
+}
+
 // TODO: Add timeouts during waiting for data from the other person if they want to continue waiting or just exit
 void playOnline(TicTacToe game, const Address dest, Socket socket, const bool asPlayerOne)
 {
-	bool catsGame = true;
-
-	while (game.getMovesMade() < TicTacToe::maxMoves)
+	while (!checkGameStatus(game))
 	{
-		bool invalidInput = false;
 		int x = 0;
 		int y = 0;
 
 		if (game.isPlayerOneTurn() == asPlayerOne)
 		{
-			while (true)
-			{
-				game.draw();
+			getPlayerCoords(game, x, y);
+			const char data[] = {x, y};
 
-				if (invalidInput)
-					std::cout << "Previous input invalid!\n";
-
-				std::cout << " Your turn (" << (asPlayerOne ? game.getPlayerOne() : game.getPlayerTwo()) << ")\n";
-
-				invalidInput = true;
-				std::string input;
-				std::getline(std::cin, input);
-
-				if (input.length() >= 3)
-				{
-					x = (int(input[2]) - 48) - 1;
-					y = (int(input[0]) - 48) - 1;
-
-					if (x >= 0 && x < 3 && y >= 0 && y < 3)
-						if (game.getSpot(x, y) == game.getEmptySpot())
-							invalidInput = false;
-				}
-
-				if (!invalidInput)
-				{
-					const char data[] = {x, y};
-
-					socket.send(dest, data, sizeof(data));
-					break;
-				}
-			}
+			socket.send(dest, data, sizeof(data));
 		}
 
-		while (true)
+		else
 		{
-			Address from;
-			char data[2];
-
-			if (socket.recieve(from, data, sizeof(data)) > 0)
+			while (true)
 			{
-				x = data[0];
-				y = data[1];
-				break;
+				Address from;
+				char data[2];
+
+				if (socket.recieve(from, data, sizeof(data)) > 0)
+				{
+					x = data[0];
+					y = data[1];
+					break;
+				}
 			}
 		}
 
@@ -72,64 +102,18 @@ void playOnline(TicTacToe game, const Address dest, Socket socket, const bool as
 
 void playLocally(TicTacToe game)
 {
-	bool catsGame = true;
-
-	while (game.getMovesMade() < TicTacToe::maxMoves)
+	while (!checkGameStatus(game))
 	{
 		if ((game.aiEnabled() && !game.isAiTurn()) || !game.aiEnabled())
 		{
-			bool invalidInput = false;
-			int x = 0;
-			int y = 0;
+			int x, y;
 
-			while (true)
-			{
-				game.draw();
-
-				if (invalidInput)
-					std::cout << "Previous input invalid!\n";
-
-				std::cout << " Your turn (" << (game.isPlayerOneTurn() ? game.getPlayerOne() : game.getPlayerTwo()) << ") \n";
-
-				invalidInput = true;
-				std::string input;
-				std::getline(std::cin, input);
-
-				if (input.length() >= 3)
-				{
-					x = (int(input[2]) - 48) - 1;
-					y = (int(input[0]) - 48) - 1;
-
-					if (x >= 0 && x < 3 && y >= 0 && y < 3)
-						if (game.getSpot(x, y) == game.getEmptySpot())
-							invalidInput = false;
-				}
-
-				if (!invalidInput)
-					break;
-			}
-
+			getPlayerCoords(game, x, y);
 			game.insertMove(x, y);
 		}
 
 		else
 			game.insertAiMove();
-
-		char winner = game.getWinner();
-
-		if (winner != game.getEmptySpot())
-		{
-			game.draw();
-			std::cout << " WINNER! " << winner << std::endl;
-			catsGame = false;
-			break;
-		}
-	}
-
-	if (catsGame)
-	{
-		game.draw();
-		std::cout << "\n CATS GAME! \n" << std::endl;
 	}
 }
 
