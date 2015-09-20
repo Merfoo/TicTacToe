@@ -69,3 +69,19 @@ const std::string Address::getAddressAndPort() const
 {
 	return std::string(getA() + '.' +  getB() + '.' + getC() + '.' + getD() + ":" + std::to_string(getPort()));
 }
+
+const bool Address::operator == (const Address& r) const
+{
+	if (m_a != r.getA() || m_b != r.getB() || m_c != r.getC() || m_d != r.getD() || m_port != r.getPort())
+		return false;
+
+	return true;
+}
+
+const bool Address::operator != (const Address& r) const
+{
+	if (m_a != r.getA() || m_b != r.getB() || m_c != r.getC() || m_d != r.getD() || m_port != r.getPort())
+		return true;
+
+	return false;
+}

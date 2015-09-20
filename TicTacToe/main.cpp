@@ -8,7 +8,18 @@
 
 const int socketPort = 5000;
 const float waitForPlayerTimeout = 10;		// Seconds
-const float listenForPlayerTimeout = 20;	// Seconds
+const float listenForPlayerTimeout = 15;	// Seconds
+
+// idk how legit this is
+const bool isNumber(const char c)
+{
+	const int val = int(c) - 48;
+
+	if (val < 0 || val > 9)
+		return false;
+
+	return true;
+}
 
 const float convertToSeconds(std::chrono::duration<float> duration)
 {
@@ -177,14 +188,27 @@ int main()
 			if (in == playVsOnline)
 			{
 				Socket socket;
+				socket.open(socketPort);
+
+				const char request = 'a';
 				bool listen = false;
+				bool invalidOnlineInput = false;
+				int address[4];
 
 				while (true)
 				{
+					if (invalidOnlineInput)
+					{
+						std::cout << "Invalid input!" << std::endl;
+						invalidOnlineInput = false;
+					}
+
 					std::cout << "Enter ip address or [n] to listen for someone." << std::endl;
 
 					std::string online;
 					std::getline(std::cin, online);
+					int begIndex = 0;
+					int addressIndex = 0;
 
 					for (int i = 0; i < online.length(); i++)
 					{
@@ -193,24 +217,94 @@ int main()
 							listen = true;
 							break;
 						}
+
+						else if (online[i] == '.')
+						{
+							std::string val = online.substr(begIndex, i);
+							int num = std::stoi(val);
+
+							if (addressIndex >= 3 || num < 0 || num > 255)
+							{
+								invalidOnlineInput = true;
+								break;
+							}
+
+							address[addressIndex++] = num;
+							begIndex = i + 1;
+						}
+
+						else if (!isNumber(online[i]))
+						{
+							invalidOnlineInput = true;
+							break;
+						}
+
+						else if (i == online.length() - 1)
+						{
+							address[addressIndex] = std::stoi(online.substr(begIndex));
+							
+							if (address[addressIndex] < 0 || address[addressIndex] > 255 || addressIndex < 2)
+							{
+								invalidOnlineInput = true;
+								break;
+							}
+						}
 					}
 
 					if (listen)
+						break;
+
+					if (!invalidOnlineInput)
+					{
+						Address dest(address[0], address[1], address[2], address[3], socketPort);
+						const char data[] = { request };
+						socket.send(dest, data, sizeof(data));
+
+						auto startTime = std::chrono::steady_clock::now();
+
+						while (true)
+						{
+							Address from;
+							char ack[1];
+
+							if (socket.recieve(from, ack, sizeof(ack)) > 0 && ack[0] == request && dest == from)
+							{
+								playOnline(game, dest, socket, false);
+								break;
+							}
+
+							else if (convertToSeconds(std::chrono::steady_clock::now() - startTime) >= listenForPlayerTimeout)
+							{
+								std::cout << "Keep waiting for reply? [y]" << std::endl;
+
+								std::string response;
+								std::getline(std::cin, response);
+
+								if (response.length() > 0 && response[0] == 'y')
+								{
+									std::cout << "Continuing waitng for reply..." << std::endl;
+									break;
+								}
+
+								else
+									break;
+							}
+						}
+					}
+
+					if(!invalidOnlineInput)
 						break;
 				}
 
 				if (listen)
 				{
-					socket.open(socketPort);
 					std::cout << "Listening on port: " << socketPort << std::endl;
 
 					auto startTime = std::chrono::steady_clock::now();
 
-					// TODO: Add timeout for waiting for data to continue or exit
 					while (true)
 					{
 						Address from;
-						const char request = 'a';
 						char data[1];
 						
 						if (socket.recieve(from, data, sizeof(data)) > 0 && data[0] == request)

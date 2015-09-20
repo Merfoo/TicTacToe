@@ -19,6 +19,9 @@ public:
 	const unsigned short getPort() const;
 
 	const std::string toString() const;
+
+	const bool operator == (const Address& r) const;
+	const bool operator != (const Address& r) const;
 private:
 	unsigned char m_a;
 	unsigned char m_b;
