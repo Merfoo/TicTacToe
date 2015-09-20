@@ -282,8 +282,8 @@ int main()
 
 								if (response.length() > 0 && response[0] == 'y')
 								{
+									startTime = std::chrono::steady_clock::now();
 									std::cout << "Continuing waitng for reply..." << std::endl;
-									break;
 								}
 
 								else
@@ -316,6 +316,8 @@ int main()
 
 							if (response.length() > 0 && response[0] == 'y')
 							{
+								data[1] = request;
+								socket.send(from, data, sizeof(data));
 								playOnline(game, from, socket, true);
 								break;
 							}
