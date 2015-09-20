@@ -93,8 +93,6 @@ void playOnline(TicTacToe game, const Address dest, Socket socket, const bool as
 			int x, y;
 			getPlayerCoords(game, x, y);
 			game.insertMove(x, y);
-			game.draw();
-			std::cout << "Waiting for player 2..." << std::endl;
 
 			const char data[] = {x, y};
 			socket.send(dest, data, sizeof(data));
@@ -102,6 +100,9 @@ void playOnline(TicTacToe game, const Address dest, Socket socket, const bool as
 
 		else
 		{
+			game.draw();
+			std::cout << "Waiting for player 2..." << std::endl;
+
 			int x, y;
 			auto startTime = std::chrono::steady_clock::now();
 			
