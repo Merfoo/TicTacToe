@@ -101,7 +101,7 @@ void playOnline(TicTacToe game, const Address dest, Socket socket, const bool as
 		else
 		{
 			game.draw();
-			std::cout << "Waiting for player 2..." << std::endl;
+			std::cout << "Waiting for player " << (asPlayerOne ? game.getPlayerTwo() : game.getPlayerOne()) << std::endl;
 
 			int x, y;
 			auto startTime = std::chrono::steady_clock::now();
