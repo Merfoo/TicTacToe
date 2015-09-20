@@ -1,15 +1,15 @@
 CC=g++
 IDIR=.
-CFLAGS:=-I$(IDIR)
+CFLAGS:=-I$(IDIR) -std=c++11
 
 EXE=tictactoe.out
 
-_DEPS = TicTacToe.h
+_DEPS = TicTacToe.h Address.h Socket.h
 DEPS := $(patsubst %, $(IDIR)/%, $(_DEPS))
 
 ODIR=obj
 
-_OBJ = main.o TicTacToe.o
+_OBJ = main.o TicTacToe.o Address.o Socket.o
 OBJ := $(patsubst %, $(ODIR)/%, $(_OBJ))
 
 all: $(EXE)
