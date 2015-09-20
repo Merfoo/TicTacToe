@@ -17,8 +17,8 @@ Address::Address(const unsigned char a, const unsigned char b, const unsigned ch
 
 Address::Address(const unsigned int address, const unsigned short port) :
 	m_a(address >> 24),
-	m_b((address << 8) >> 16),
-	m_c((address << 16) >> 8),
+	m_b((address << 8) >> 24),
+	m_c((address << 16) >> 24),
 	m_d((address << 24) >> 24),
 	m_address(address),
 	m_port(port),
