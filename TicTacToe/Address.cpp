@@ -67,7 +67,14 @@ const std::string Address::toString() const
 
 const std::string Address::getAddressAndPort() const
 {
-	return std::string(getA() + '.' +  getB() + '.' + getC() + '.' + getD() + ":" + std::to_string(getPort()));
+	// Not happy with this...
+	const std::string p(1, '.');
+	const std::string a = std::to_string(m_a);
+	const std::string b = std::to_string(m_b);
+	const std::string c = std::to_string(m_c);
+	const std::string d = std::to_string(m_d);
+
+	return a + p + b + p + c + p + d + ":" + std::to_string(getPort());
 }
 
 const bool Address::operator == (const Address& r) const
