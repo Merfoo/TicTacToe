@@ -88,21 +88,23 @@ void playOnline(TicTacToe game, const Address dest, Socket socket, const bool as
 {
 	while (!checkGameStatus(game))
 	{
-		int x = 0;
-		int y = 0;
-
 		if (game.isPlayerOneTurn() == asPlayerOne)
 		{
+			int x, y;
 			getPlayerCoords(game, x, y);
-			const char data[] = {x, y};
+			game.insertMove(x, y);
+			game.draw();
+			std::cout << "Waiting for player 2..." << std::endl;
 
+			const char data[] = {x, y};
 			socket.send(dest, data, sizeof(data));
 		}
 
 		else
 		{
+			int x, y;
 			auto startTime = std::chrono::steady_clock::now();
-
+			
 			while (true)
 			{
 				Address from;
@@ -132,9 +134,9 @@ void playOnline(TicTacToe game, const Address dest, Socket socket, const bool as
 						return;
 				}
 			}
-		}
 
-		game.insertMove(x, y);
+			game.insertMove(x, y);
+		}
 	}
 }
 
@@ -316,7 +318,7 @@ int main()
 
 							if (response.length() > 0 && response[0] == 'y')
 							{
-								data[1] = request;
+								data[0] = request;
 								socket.send(from, data, sizeof(data));
 								playOnline(game, from, socket, true);
 								break;

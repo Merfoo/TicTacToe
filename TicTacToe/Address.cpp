@@ -1,5 +1,7 @@
 #include "Address.h"
 
+#include <iostream>
+
 Address::Address()
 {
 }
@@ -79,7 +81,7 @@ const std::string Address::getAddressAndPort() const
 
 const bool Address::operator == (const Address& r) const
 {
-	if (m_a != r.getA() || m_b != r.getB() || m_c != r.getC() || m_d != r.getD() || m_port != r.getPort())
+	if (m_address != r.getAddress() || m_port != r.getPort())
 		return false;
 
 	return true;
@@ -87,7 +89,7 @@ const bool Address::operator == (const Address& r) const
 
 const bool Address::operator != (const Address& r) const
 {
-	if (m_a != r.getA() || m_b != r.getB() || m_c != r.getC() || m_d != r.getD() || m_port != r.getPort())
+	if (m_address != r.getAddress() || m_port != r.getPort())
 		return true;
 
 	return false;
